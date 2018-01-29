@@ -1,0 +1,20 @@
+javac HighScore*.java -d .
+jar cvf hs.jar com/scoredev/scores/HighScore*.class
+keytool -genkey -keystore chris.keystore -alias signJars
+jarsigner -keystore chris.keystore hs.jar signJars
+keytool -export -keystore chris.keystore -alias signJars -file Chris.cer
+
+================
+javac ExampleGame.java -classpath hs.jar -d .
+jar cvf terry.jar com/gamedev/games/ExampleGame.class
+keytool -genkey -keystore terry.keystore -alias signTJars
+jarsigner -keystore terry.keystore terry.jar signTJars
+keytool -export -keystore terry.keystore -alias signTJars -file Terry.cer
+
+=================
+
+keytool -import -alias chris -file Chris.cer -keystore kim.keystore
+keytool -import -alias terry -file Terry.cer -keystore kim.keystore
+
+java -Djava.security.manager -Djava.security.policy=kim.policy -classpath hs.jar;terry.jar com.gamedev.games.ExampleGame set 456
+java -Djava.security.manager -Djava.security.policy=kim.policy -classpath hs.jar;terry.jar com.gamedev.games.ExampleGame get
