@@ -90,6 +90,13 @@ public class ChatClient {
                 JOptionPane.PLAIN_MESSAGE);
     }
 
+    private String getPass() {
+        JPasswordField pf = new JPasswordField();
+        int okCxl = JOptionPane.showConfirmDialog(frame, pf, "Enter Password", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        return String.valueOf(pf.getPassword());
+    }
+
 
 
     /**
@@ -98,28 +105,41 @@ public class ChatClient {
     private void run() throws IOException {
 
         // Make connection and initialize streams
-
-        String serverAddress = getServerAddress();
+        User user = new User();
+        String serverAddress = "localhost";
         Socket socket = new Socket(serverAddress, 9001);
-        int signIn = userService.register();
-        System.out.println(signIn);
-        if (signIn == 1){
-            String temp =  userService.newUser();
-        }if (signIn == -1){
-            System.exit(1);
-        }
         in = new BufferedReader(new InputStreamReader(
                 socket.getInputStream()));
         out = new PrintWriter(socket.getOutputStream(), true);
 
+//        int signIn = userService.register();
+//        System.out.println(signIn);
+//        if (signIn == 1){
+//            do {
+//                userService.newUser();
+//
+//            }while (true);
+//
+//        }if (signIn == -1){
+//            System.exit(1);
+//        }
+
+
         // Process all messages from server, according to the protocol.
         while (true) {
             String line = in.readLine();
-            if (line.startsWith("SUBMITNAME")) {
-                out.println(getName());
-            } else if (line.startsWith("NAMEACCEPTED")) {
+            if (line.startsWith("LOGIN")) {
+                user.setUsername(getName());
+                out.println(user.getUsername());
+            }
+            else if (line.startsWith("PASSWORD")) {
+                user.setPassword(getPass());
+                out.println(user.getPassword());
+            }
+            else if (line.startsWith("NAMEACCEPTED")) {
                 textField.setEditable(true);
-            } else if (line.startsWith("MESSAGE")) {
+            }
+            else if (line.startsWith("MESSAGE "+user.getUsername())) {
                 messageArea.append(line.substring(8) + "\n");
             }
         }

@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashSet;
+import java.util.Hashtable;
 
 /**
  * A multithreaded chat room server.  When a client connects the
@@ -39,7 +40,7 @@ public class ChatServer {
      * so that we can check that new clients are not registering name
      * already in use.
      */
-    private static HashSet<String> names = new HashSet<String>();
+    private static DataStorage data = new DataStorage();
 
     /**
      * The set of all the print writers for all the clients.  This
@@ -70,6 +71,7 @@ public class ChatServer {
      */
     private static class Handler extends Thread {
         private String name;
+        private String pw;
         private Socket socket;
         private BufferedReader in;
         private PrintWriter out;
@@ -101,17 +103,32 @@ public class ChatServer {
                 // a name is submitted that is not already used.  Note that
                 // checking for the existence of a name and adding the name
                 // must be done while locking the set of names.
-                while (true) {
-                    out.println("SUBMITNAME");
+                Boolean flag = true;
+                while (flag) {
+                    out.println("LOGIN");
                     name = in.readLine();
                     if (name == null) {
                         return;
                     }
-                    synchronized (names) {
-                        if (!names.contains(name)) {
-                            names.add(name);
+                    synchronized (data) {
+                        if (!data.checkIfUserExist(name)) {
+                            data.setData(name,new Hashtable<>());
                             break;
+                        }else {
+                            while (true){
+                                out.println("PASSWORD");
+                                pw = in.readLine();
+                                if(pw == null){
+                                    return;
+                                }
+                                String pw0 = data.getData(name).get("password");
+                                if (pw0.equals(pw)){
+                                    flag = false;
+                                    break;
+                                }
+                            }
                         }
+
                     }
                 }
 
@@ -128,18 +145,28 @@ public class ChatServer {
                     if (input == null) {
                         return;
                     }
-                    for (PrintWriter writer : writers) {
-                        writer.println("MESSAGE " + name + ": " + input);
+                    if (input.equals("")){
+                        continue;
                     }
+                    if (input.equalsIgnoreCase("info")){
+                        Hashtable<String,String> temp = data.getData(name);
+                        temp.entrySet().forEach(e->{
+                            out.println("MESSAGE " + name + ": "+e.getKey()+"=>"+e.getValue());
+                        });
+                    }else {
+                        for (PrintWriter writer:writers){
+                            writer.println("MESSAGE "+ name +": "+input);
+                        }
+                    }
+
                 }
             } catch (IOException e) {
                 System.out.println(e);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
             } finally {
                 // This client is going down!  Remove its name and its print
                 // writer from the sets, and close its socket.
-                if (name != null) {
-                    names.remove(name);
-                }
                 if (out != null) {
                     writers.remove(out);
                 }

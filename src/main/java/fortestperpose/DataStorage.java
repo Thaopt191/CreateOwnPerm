@@ -10,6 +10,7 @@ import java.util.Hashtable;
 
 public class DataStorage {
     private File highScoreFile;
+    String gameName = "ExampleGame";
     HashMap<String,Hashtable<String,String>> db;
     public DataStorage(){
         SecurityManager sm = System.getSecurityManager();
@@ -70,9 +71,9 @@ public class DataStorage {
     {
         //check permission first
         SecurityManager sm = System.getSecurityManager();
-//        if (sm != null) {
-//            sm.checkPermission(new HighScorePermission(gameName));
-//        }
+        if (sm != null) {
+            sm.checkPermission(new HighScorePermission(gameName));
+        }
 
         Hashtable<String,String> score = null;
 
@@ -112,9 +113,9 @@ public class DataStorage {
             throws IOException, ClassNotFoundException {
         //check permission first
         SecurityManager sm = System.getSecurityManager();
-//        if (sm != null) {
-//            sm.checkPermission(new HighScorePermission(gameName));
-//        }
+        if (sm != null) {
+            sm.checkPermission(new HighScorePermission(gameName));
+        }
         HashMap<String, Hashtable<String, String>> flag;
 
 
@@ -142,9 +143,13 @@ public class DataStorage {
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
         DataStorage t = new DataStorage();
+        Hashtable<String,String> temp = new Hashtable<>();
+        temp.put("password","123456");
+        t.setData("thaopt2",temp);
 
-        t.setData("thaopt2",new Hashtable<String, String>());
+
+
     }
 }

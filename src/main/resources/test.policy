@@ -1,0 +1,11 @@
+
+grant {
+	permission java.io.FilePermission "C:\\Users\\thaopt4\\.datatemp", "write,read";
+	permission "java.util.PropertyPermission" "os.name", "read";
+  	permission fortestperpose.HighScorePermission "ExampleGame";
+  	permission "java.util.PropertyPermission" "os.arch", "read";
+  	
+};
+grant codeBase "file:/D:/policy/*"{
+	  	permission "java.util.PropertyPermission" "user.home", "read";
+};
